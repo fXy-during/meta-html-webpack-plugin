@@ -1,0 +1,34 @@
+{
+  "name": "meta-html-webpack-plugin",
+  "version": "1.0.0",
+  "description": "A webpack to generate meta tag in html file",
+  "main": "dist/meta-html-webpack-plugin.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "cross-env NODE_ENV=production babel src -d dist --verbose ",
+    "git-pre-commit": "lint-staged"
+  },
+  "keywords": [
+    "webpack",
+    "plugin",
+    "meta",
+    "html"
+  ],
+  "engines": {
+    "node": ">=6.9.0"
+  },
+  "author": "beth",
+  "license": "MIT",
+  "devDependencies": {
+    "@babel/cli": "^7.2.3",
+    "@babel/core": "^7.3.4",
+    "@babel/preset-env": "^7.3.4",
+    "cheerio": "^1.0.0-rc.2",
+    "cross-env": "^5.2.0",
+    "husky": "^1.3.1",
+    "lint-staged": "^8.1.5",
+    "prettier": "^1.16.4",
+    "read-pkg-up": "^5.0.0",
+    "semver": "^6.0.0"
+  }
+}

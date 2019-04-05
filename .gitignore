@@ -1,0 +1,14 @@
+/config
+/coverage
+.DS_Store
+node_modules
+*.swp
+*.log
+.env
+dist
+*.ignore
+.idea
+.vscode
+.cache
+package-lock.json
+yarn.lock
