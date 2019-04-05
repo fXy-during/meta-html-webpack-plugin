@@ -1,12 +1,12 @@
-const cheerio = require("cheerio");
-const path = require("path");
+import cheerio from "cheerio";
+import path from "path";
 
 class BasicPlugin {
     constructor(options) {
         // TODO
         this.filename = "index.html";
         this.rootPath = process.cwd();
-        this.configPath = options.configPath || path.resolve(rootPath, "./meta.html.config.js");
+        this.configPath = options.configPath || path.resolve(this.rootPath, "./meta.html.config.js");
     }
 
     /**
@@ -15,13 +15,11 @@ class BasicPlugin {
      * @param {Enum} ["normal","ogp"] 
      */
     createMetaTag(obj, type = "normal") {
-        var propStr = "";
-        var ogpPrefix = "og:";
+        let propStr = "";
+        const ogpPrefix = "og:";
 
-        var {
-            key,
-            value
-        } = obj;
+        const key = obj.key;
+        let value = obj.value;
 
         // TODO
         switch (type) {
@@ -37,11 +35,14 @@ class BasicPlugin {
                     break;
                 }
             default:
-                {}
+                {
+                    break;
+                }
         }
 
         return `<meta ${propStr} />`
     }
+
     /**
      * 根据配置输出meta标签集合
      * @param {Object} obj 
@@ -50,22 +51,29 @@ class BasicPlugin {
      * 
      */
     loadMeta(obj, type = "normal") {
-        var str = " ";
-        obj && Object.keys(obj).forEach(key => {
-            str += this.createMetaTag({
-                key,
-                value: obj[key]
-            }, type)
-        })
+        let str = " ";
+        if (obj) {
+            Object.keys(obj).forEach(key => {
+                str += this.createMetaTag({
+                    key,
+                    value: obj[key]
+                }, type)
+            })
+        }
         return str;
     }
-    main(compilation, callback) {
-        console.log("监听到了emit");
 
-        var html = compilation.assets[this.filename];
-        var content = html.source()
-        var metaStr = " ";
-        var $ = cheerio.load(content, {
+    beTruety(bool, fn) {
+        if (bool) {
+            fn()
+        }
+    }
+
+    main(compilation, callback) {
+        const html = compilation.assets[this.filename];
+        const content = html.source()
+        let metaStr = " ";
+        const $ = cheerio.load(content, {
             // 防止出现中文乱码
             decodeEntities: false
         });
@@ -86,18 +94,25 @@ class BasicPlugin {
         } = config;
 
         // 修改title
-        title || normal.title && $("title").text(title || normal.title);
+        this.beTruety(title || normal.title, () => {
+            $("title").text(title || normal.title);
+        })
 
         // 添加meta标签
-        normal && (metaStr += this.loadMeta(normal));
-        ogp && (metaStr += this.loadMeta(ogp, "ogp"));
+        this.beTruety(normal, () => {
+            (metaStr += this.loadMeta(normal));
+        })
+
+        this.beTruety(ogp, () => {
+            (metaStr += this.loadMeta(ogp, "ogp"));
+        })
 
         // 写入html
         $("head").append(metaStr);
 
         const htmlWithMeta = $.html();
 
-        compilation.assets[this.filename].source = function () {
+        compilation.assets[this.filename].source = function source() {
             return htmlWithMeta
         }
 
@@ -110,4 +125,4 @@ class BasicPlugin {
 
 }
 
-module.exports = BasicPlugin;
+export default BasicPlugin;
