@@ -36,17 +36,17 @@ _/
 path: path.resolve(process.cwd(), 'dist'),
 },
 module: {
-rules: [
-{
+rules: [{
 test: /\.(js|jsx)$/,
 loader: 'babel-loader',
-},
-],
+}, ],
 },
 plugins: [
 new webpack.ProgressPlugin(),
 new CleanWebpackPlugin(),
-new HtmlWebpackPlugin({ template: './src/index.html' }),
+new HtmlWebpackPlugin({
+template: './src/index.html'
+}),
 new MetaHtmlWebpackPlugin()
 ],
 };

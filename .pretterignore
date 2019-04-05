@@ -9,4 +9,5 @@ package.json
 package-lock.json
 .eslintrc.js
 .eslintignore
+README.md
 __sandbox__
