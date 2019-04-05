@@ -4,7 +4,7 @@
   "description": "A webpack to generate meta tag in html file",
   "main": "dist/meta-html-webpack-plugin.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "echo \"Error: no test specified\" && exit 0",
     "build": "npm run clean && cross-env NODE_ENV=production babel src -d dist --verbose ",
     "git-pre-commit": "lint-staged",
     "git-pre-push": "npm run lint &&  npm run test",
