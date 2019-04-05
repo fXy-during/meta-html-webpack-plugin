@@ -4,6 +4,7 @@ const prettier = {
   singleQuote: false,
   trailingComma: "all",
   arrowParens: "always",
+  stdinFilepath: "./src/*",
   overrides: [
     {
       files: ["*.js", ".*.js"],
