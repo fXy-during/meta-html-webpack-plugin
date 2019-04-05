@@ -7,4 +7,6 @@ dist
 static
 package.json
 package-lock.json
+.eslintrc.js
+.eslintignore
 __sandbox__
