@@ -1,6 +1,6 @@
 {
   "name": "meta-html-webpack-plugin",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A webpack to generate meta tag in html file",
   "main": "./dist/meta-html-webpack-plugin.js",
   "scripts": {
