@@ -1,5 +1,6 @@
 const cheerio = require("cheerio");
 const path = require("path");
+const metaTagMap = require("./meta-tag");
 
 const configDefaultPath = "./meta.html.config.js";
 
@@ -12,8 +13,11 @@ const defaultConfig = {
   // 是否压缩
   // TODO
   minify: false,
+  // 是否配置优先
+  privilege: false,
   normal: {
-    viewport: "width=device-width, initial-scale=1"
+    viewport: "width=device-width, initial-scale=1",
+    charset: "utf-8"
   },
   httpEquiv: { "X-UA-Compatible": ["IE=edge", "chrome=1"] },
   ogp: {}
@@ -24,6 +28,8 @@ const type2key = {
   ogp: { key: "property", prefix: "og:" },
   httpEquiv: { key: "http-equiv" }
 };
+
+const singleMetaProp = ["charset"];
 // 支持更多类型的meta标签
 
 class MetaHtmlWebpackPlugin {
@@ -50,19 +56,27 @@ class MetaHtmlWebpackPlugin {
    * @param {Object} {key, value}
    * @param {Enum} ["normal","ogp"]
    */
-  createMetaTag(obj, type = "normal") {
+  createMetaTag(obj) {
     let propStr = "";
-    const key = obj.key;
+    const { single } = obj;
+    delete obj.single;
 
-    let value = obj.value;
+    const keys = Object.keys(obj);
 
-    const { key: propName, prefix } = type2key[type];
-
-    value = Array.isArray(value) ? value.join(",") : value;
-
-    propStr += ` ${propName}="${
-      !!prefix ? prefix + key : key
-    }" content="${value}"`;
+    if (single) {
+      const key = keys[0];
+      propStr += `${key}=${obj[key]}`;
+    } else {
+      keys.forEach(key => {
+        let value = obj[key];
+        value = Array.isArray(value) ? value.join(",") : value;
+        // TODO
+        if (key === "property") {
+          value = "og:" + value;
+        }
+        propStr += `${key}="${value}"`;
+      });
+    }
 
     return `<meta ${propStr} />`;
   }
@@ -74,38 +88,29 @@ class MetaHtmlWebpackPlugin {
    * @return {Array} meta 标签集合
    *
    */
-  loadMeta(obj, type = "normal") {
+  loadMeta(metaCollectionMap) {
     const metaArr = [];
-    if (obj) {
-      Object.keys(obj).forEach(key => {
-        metaArr.push(
-          this.createMetaTag(
-            {
-              key,
-              value: obj[key]
-            },
-            type
-          )
-        );
+    if (metaCollectionMap) {
+      metaCollectionMap.forEach(metaMap => {
+        metaArr.push(this.createMetaTag(metaMap));
       });
     }
     return metaArr;
   }
 
-  beTruety(bool, fn) {
-    if (bool) {
-      fn();
-    }
-  }
-
   main(compilation, callback) {
-    const html = compilation.assets[this.filename];
-    const content = html.source();
-    let metaCollection = [];
+    const htmlSource = compilation.assets[this.filename];
+    const content = htmlSource.source();
     const $ = cheerio.load(content, {
       // 防止出现中文乱码
       decodeEntities: false
     });
+    let metaCollection = [];
+    let metaCollectionMap = [];
+    let htmlTemplateMetaMap = [];
+
+    // 获取html文件原有的meta标签
+    htmlTemplateMetaMap = [].concat(metaTagMap($("head meta")));
 
     let config;
 
@@ -116,27 +121,19 @@ class MetaHtmlWebpackPlugin {
       config = Object.assign({}, defaultConfig);
     }
 
-    const { normal, httpEquiv, ogp, title } = config;
+    // const { title } = config;
 
-    // 修改title
-    this.beTruety(title || normal.title, () => {
-      $("title").text(title || normal.title);
-    });
+    // 格式化用户配置
+    const usrMetaMap = this.getMetaInfoFromConfig(config);
 
-    // 添加meta标签
-    this.beTruety(normal, () => {
-      metaCollection = metaCollection.concat(this.loadMeta(normal));
-    });
+    // 合并原有标签和用户配置
+    metaCollectionMap = [].concat([], htmlTemplateMetaMap, usrMetaMap);
 
-    this.beTruety(ogp, () => {
-      metaCollection = metaCollection.concat(this.loadMeta(ogp, "ogp"));
-    });
+    // 去重
+    // TODO
 
-    this.beTruety(httpEquiv, () => {
-      metaCollection = metaCollection.concat(
-        this.loadMeta(httpEquiv, "httpEquiv")
-      );
-    });
+    // 转换为meta集合
+    metaCollection = this.loadMeta(metaCollectionMap);
 
     // 写入html
     $("head").append(metaCollection.join(" "));
@@ -157,6 +154,37 @@ class MetaHtmlWebpackPlugin {
         this.main(compilation, callback);
       }
     );
+  }
+
+  getMetaInfoFromConfig(usrConfig) {
+    const keyProp = ["normal", "httpEquiv", "ogp"];
+    const subMetaCollectionMap = [];
+
+    for (const key of Object.keys(usrConfig)) {
+      if (!keyProp.includes(key)) {
+        continue;
+      }
+      const keyPropValue = usrConfig[key];
+      const propKeys = Object.keys(keyPropValue);
+
+      propKeys.forEach(propName => {
+        let metaMap = {};
+        // 是否是单属性
+        if (!singleMetaProp.includes(propName)) {
+          metaMap = {
+            [type2key[key].key]: propName,
+            content: keyPropValue[propName]
+          };
+        } else {
+          // 形如charset="utf-8"
+          metaMap = {
+            [propName]: keyPropValue[propName]
+          };
+        }
+        subMetaCollectionMap.push(metaMap);
+      });
+    }
+    return subMetaCollectionMap;
   }
 }
 
