@@ -1,5 +1,6 @@
-import cheerio from "cheerio";
-import path from "path";
+const cheerio = require("cheerio");
+const path = require("path");
+
 const configDefaultPath = "./meta.html.config.js";
 
 class BasicPlugin {
@@ -83,8 +84,6 @@ class BasicPlugin {
 
   main(compilation, callback) {
     const html = compilation.assets[this.filename];
-    // console.log("html",html);
-    // return;
     const content = html.source();
     let metaStr = " ";
     const $ = cheerio.load(content, {
@@ -92,12 +91,10 @@ class BasicPlugin {
       decodeEntities: false
     });
 
-    // 获取SEOConfig
     const config = require(this.configPath);
 
-    // 检查SEOConfig
     if (!config) {
-      // callback("未获取到meta.config");
+      callback("未获取到meta.config");
       return;
     }
 
@@ -130,14 +127,10 @@ class BasicPlugin {
   }
 
   apply(compiler) {
-    // compiler.plugin("emit", this.main.bind(this));
     compiler.hooks.emit.tapAsync(
       "MetaHtmlWebpackPlugin",
       (compilation, callback) => {
-        // compilation.hooks.optimizeChunkAssets.tap("MetaHtmlWebpack", (chunks) => {
         this.main(compilation, callback);
-        // console.info("compiler emit hook tapped", compilation)
-        // })
       }
     );
   }
