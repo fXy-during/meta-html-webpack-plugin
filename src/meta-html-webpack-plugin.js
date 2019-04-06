@@ -1,12 +1,16 @@
 const cheerio = require("cheerio");
 const path = require("path");
-const configDefaultPath = "./meta.html.config.js";
 
-// meta 标签管理
+const configDefaultPath = "./meta.html.config.js";
 
 // 默认配置
 const defaultConfig = {
+  // 默认模式
+  // 只开启normal和httpEquiv的部分参数
+  // TODO
   default: true,
+  // 是否压缩
+  // TODO
   minify: false,
   normal: {
     viewport: "width=device-width, initial-scale=1"
@@ -106,8 +110,8 @@ class MetaHtmlWebpackPlugin {
     let config;
 
     try {
-      const _config = require(this.configPath);
-      config = Object.assign({}, _config, defaultConfig);
+      const usrConfig = require(this.configPath);
+      config = Object.assign({}, usrConfig, defaultConfig);
     } catch (e) {
       config = Object.assign({}, defaultConfig);
     }

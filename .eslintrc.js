@@ -19,7 +19,8 @@ const eslint = {
   rules: {
     "filenames/match-exported": 0,
     "class-methods-use-this": 0,
-    "no-param-reassign": 1
+    "no-param-reassign": 1,
+    "no-extra-boolean-cast": 0
   }
 };
 
