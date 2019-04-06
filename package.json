@@ -2,7 +2,7 @@
   "name": "meta-html-webpack-plugin",
   "version": "1.0.0",
   "description": "A webpack to generate meta tag in html file",
-  "main": "dist/meta-html-webpack-plugin.js",
+  "main": "./dist/meta-html-webpack-plugin.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 0",
     "build": "npm run clean && cross-env NODE_ENV=production babel src -d dist --verbose ",

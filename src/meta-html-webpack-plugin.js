@@ -1,14 +1,24 @@
 import cheerio from "cheerio";
 import path from "path";
+const configDefaultPath = "./meta.html.config.js";
 
 class BasicPlugin {
   constructor(options) {
+    if (arguments.length > 1) {
+      throw new Error(
+        "MetaHtmlWebpack only takes one argument (pass an options object)"
+      );
+    }
+
+    // 利用JSON-Schema验证options
+
     // TODO
     this.filename = "index.html";
     this.rootPath = process.cwd();
+
     this.configPath =
-      options.configPath ||
-      path.resolve(this.rootPath, "./meta.html.config.js");
+      (options && options.configPath) ||
+      path.resolve(this.rootPath, configDefaultPath);
   }
 
   /**
@@ -73,6 +83,8 @@ class BasicPlugin {
 
   main(compilation, callback) {
     const html = compilation.assets[this.filename];
+    // console.log("html",html);
+    // return;
     const content = html.source();
     let metaStr = " ";
     const $ = cheerio.load(content, {
@@ -85,7 +97,7 @@ class BasicPlugin {
 
     // 检查SEOConfig
     if (!config) {
-      callback("未获取到meta.config");
+      // callback("未获取到meta.config");
       return;
     }
 
@@ -118,8 +130,17 @@ class BasicPlugin {
   }
 
   apply(compiler) {
-    compiler.plugin("emit", this.main.bind(this));
+    // compiler.plugin("emit", this.main.bind(this));
+    compiler.hooks.emit.tapAsync(
+      "MetaHtmlWebpackPlugin",
+      (compilation, callback) => {
+        // compilation.hooks.optimizeChunkAssets.tap("MetaHtmlWebpack", (chunks) => {
+        this.main(compilation, callback);
+        // console.info("compiler emit hook tapped", compilation)
+        // })
+      }
+    );
   }
 }
 
-export default BasicPlugin;
+module.exports = BasicPlugin;
