@@ -20,7 +20,9 @@ const eslint = {
     "filenames/match-exported": 0,
     "class-methods-use-this": 0,
     "no-param-reassign": 1,
-    "no-extra-boolean-cast": 0
+    "no-extra-boolean-cast": 0,
+    "node/no-unpublished-require": 0,
+    "no-continue": 0
   }
 };
 

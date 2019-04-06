@@ -72,7 +72,7 @@ class MetaHtmlWebpackPlugin {
         value = Array.isArray(value) ? value.join(",") : value;
         // TODO
         if (key === "property") {
-          value = "og:" + value;
+          value = [].concat("og:", value).join("");
         }
         propStr += `${key}="${value}"`;
       });
