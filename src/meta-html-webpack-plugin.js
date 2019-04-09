@@ -44,6 +44,7 @@ class MetaHtmlWebpackPlugin {
 
     // TODO
     this.filename = "index.html";
+
     this.rootPath = process.cwd();
 
     this.configPath =
@@ -52,14 +53,19 @@ class MetaHtmlWebpackPlugin {
   }
 
   /**
+   *
+   *
    * 创建单个meta标签
+   *
+   *
    * @param {Object} {key, value}
-   * @param {Enum} ["normal","ogp"]
+   *
    */
   createMetaTag(obj) {
     let propStr = "";
     const { single } = obj;
     delete obj.single;
+    delete obj.key;
 
     const keys = Object.keys(obj);
 
@@ -82,7 +88,11 @@ class MetaHtmlWebpackPlugin {
   }
 
   /**
+   *
+   *
    * 根据配置输出meta标签集合
+   *
+   *
    * @param {Object} obj
    * @param {String} meta 类型， 默认为normal
    * @return {Array} meta 标签集合
@@ -121,8 +131,6 @@ class MetaHtmlWebpackPlugin {
       config = Object.assign({}, defaultConfig);
     }
 
-    // const { title } = config;
-
     // 格式化用户配置
     const usrMetaMap = this.getMetaInfoFromConfig(config);
 
@@ -130,10 +138,13 @@ class MetaHtmlWebpackPlugin {
     metaCollectionMap = [].concat([], htmlTemplateMetaMap, usrMetaMap);
 
     // 去重
-    // TODO
+    metaCollectionMap = this.removeRepetitionByKey(metaCollectionMap);
 
     // 转换为meta集合
     metaCollection = this.loadMeta(metaCollectionMap);
+
+    // 先去除模板中的meta
+    $("head meta").remove();
 
     // 写入html
     $("head").append(metaCollection.join(" "));
@@ -156,6 +167,39 @@ class MetaHtmlWebpackPlugin {
     );
   }
 
+  /**
+   *
+   * 接收一个对象数组，根据对象指定key去重
+   *
+   *
+   * @param {Array} 对象数组
+   * @return {Array} 去重后的数组
+   */
+  removeRepetitionByKey(arr) {
+    const singleArr = [];
+
+    return arr.filter(elm => {
+      const { key } = elm;
+
+      if (singleArr.indexOf(key) < 0) {
+        singleArr.push(key);
+        return true;
+      }
+
+      return false;
+    });
+  }
+
+  /**
+   *
+   * 从用户配置中提取meta信息，
+   * 并格式化
+   *
+   *
+   * @param {Object} usrConfig 用户配置
+   * @return {Array} 格式化后的meta信息
+   *
+   */
   getMetaInfoFromConfig(usrConfig) {
     const keyProp = ["normal", "httpEquiv", "ogp"];
     const subMetaCollectionMap = [];
@@ -173,12 +217,14 @@ class MetaHtmlWebpackPlugin {
         if (!singleMetaProp.includes(propName)) {
           metaMap = {
             [type2key[key].key]: propName,
-            content: keyPropValue[propName]
+            content: keyPropValue[propName],
+            key: propName
           };
         } else {
           // 形如charset="utf-8"
           metaMap = {
-            [propName]: keyPropValue[propName]
+            [propName]: keyPropValue[propName],
+            key: propName
           };
         }
         subMetaCollectionMap.push(metaMap);

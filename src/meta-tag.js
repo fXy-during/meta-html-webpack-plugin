@@ -15,6 +15,10 @@ function metaTagMap(metaNodeArr) {
       prop[key] = attributes[key];
     });
 
+    prop.key = prop.single
+      ? "charset"
+      : attributes.name || attributes["http-equiv"];
+
     return prop;
   });
 }
